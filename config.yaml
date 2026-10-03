@@ -1,0 +1,203 @@
+# Strategy Screener Configuration
+
+# === Data Sources ===
+data:
+  binance:
+    enabled: true
+    base_url: "https://api.binance.com"
+    futures_url: "https://fapi.binance.com"
+    quote_assets: ["USDT", "USDC"]
+    min_volume_usd: 500000      # Min $500k 24h quote volume
+    max_symbols: 100            # Max symbols to analyze
+    discovery_mode: "top_volume"  # top_volume, top_gainers, top_losers, high_volatility, all_liquid
+    interval: "1h"              # 1m, 5m, 15m, 1h, 4h, 1d
+    days_history: 90
+  
+  coingecko:
+    enabled: true
+    base_url: "https://api.coingecko.com/api/v3"
+    rate_limit: 30
+    symbols: 
+      - "bitcoin"
+      - "ethereum"
+      - "solana"
+      - "bonk"
+      - "dogwifhat"
+      - "popcat"
+      - "jupiter-exchange-solana"
+      - "render-token"
+      - "fetch-ai"
+      - "near"
+    vs_currency: "usd"
+    days_history: 180
+  
+  polymarket:
+    enabled: true
+    base_url: "https://clob.polymarket.dev"
+    scan_interval_min: 15
+    min_volume_24h: 1000
+    min_liquidity: 500
+
+  # Symbol Discovery Settings
+  discovery:
+    enabled: true
+    primary_source: "binance"     # binance or coingecko
+    modes:                        # Run multiple discovery modes
+      - "top_volume"
+      - "top_gainers"
+    combine_mode: "union"         # union or intersection
+    max_total_symbols: 150
+    exclude_stablecoins: true
+    exclude_leverage_tokens: true  # UP/DOWN, BULL/BEAR
+    min_price_usd: 0.000001       # Filter dust
+
+  cache:
+    enabled: true
+    ttl_seconds: 300
+    path: "data/cache"
+
+# === Strategies ===
+strategies:
+  mean_reversion:
+    enabled: true
+    weight: 1.0
+    params:
+      rsi_period: 14
+      rsi_oversold: 30
+      rsi_overbought: 70
+      bb_period: 20
+      bb_std: 2.0
+      zscore_period: 20
+      zscore_threshold: 2.0
+    min_score: 0.6
+
+  momentum:
+    enabled: true
+    weight: 1.0
+    params:
+      ema_fast: 12
+      ema_slow: 26
+      macd_signal: 9
+      roc_period: 10
+      roc_threshold: 0.02
+    min_score: 0.55
+
+  breakout:
+    enabled: true
+    weight: 0.8
+    params:
+      donchian_period: 20
+      volume_multiplier: 1.5
+      atr_period: 14
+      atr_multiplier: 2.0
+    min_score: 0.55
+
+  volatility:
+    enabled: true
+    weight: 0.7
+    params:
+      keltner_period: 20
+      keltner_multiplier: 2.0
+      atr_period: 14
+      squeeze_threshold: 0.05
+    min_score: 0.5
+
+  # NEW STRATEGIES FOR MEME/ALTCOINS
+  trend_following:
+    enabled: true
+    weight: 1.0
+    params:
+      ema_trend: 200           # Long-term trend filter
+      ema_fast: 20             # Entry signal
+      ema_slow: 50             # Confirmation
+      adx_period: 14
+      adx_threshold: 25        # Strong trend
+      atr_period: 14
+      atr_multiplier: 2.5      # Trailing stop
+    min_score: 0.55
+
+  volume_breakout:
+    enabled: true
+    weight: 0.9
+    params:
+      volume_lookback: 20
+      volume_multiplier: 3.0   # 3x average volume
+      price_change_threshold: 0.03  # 3% move
+      vwap_period: 20
+      rsi_period: 14
+      rsi_max_entry: 70        # Don't chase overbought
+    min_score: 0.5
+
+  mean_reversion_scalp:
+    enabled: true
+    weight: 0.6
+    params:
+      bb_period: 20
+      bb_std: 2.5              # Wider bands for scalp
+      rsi_period: 7            # Faster RSI
+      rsi_extreme_low: 20
+      rsi_extreme_high: 80
+      holding_periods: 12      # Max 12 bars hold
+    min_score: 0.5
+
+# === Backtest ===
+backtest:
+  walk_forward:
+    train_window_days: 15      # Reduced for testing (CoinGecko limited data)
+    test_window_days: 5
+    step_days: 5
+    min_train_samples: 20
+  
+  metrics:
+    min_trades: 10             # Reduced for testing
+    max_drawdown: 0.50
+    min_sharpe: 0.0
+    min_win_rate: 0.30
+    min_profit_factor: 1.0
+    min_expectancy: 0.0
+
+# === Screening ===
+screening:
+  top_n: 30
+  min_confidence: 0.5
+  min_risk_reward: 1.3
+  max_spread_pct: 5.0
+  
+  default_stop_loss_pct: 0.05
+  default_take_profit_pct: 0.10
+  default_position_size_pct: 0.02
+
+# === Futures Configuration ===
+futures:
+  enabled: true
+  default_leverage: 1
+  max_leverage: 5
+  margin_mode: "isolated"        # isolated / cross
+  liq_buffer_pct: 0.10           # 10% buffer from SL to liq price
+  position_size_pct: 0.02        # 2% of portfolio per trade
+  portfolio_value_usdt: 100      # Base portfolio for calculations
+  
+  # Funding rate overrides (per symbol, 8h rate)
+  funding_rates:
+    BTCUSDT: 0.0001
+    ETHUSDT: 0.0001
+    default: 0.0002
+
+# === Output ===
+output:
+  dashboard:
+    title: "Strategy Screener - Dynamic Discovery"
+    update_interval_min: 15
+    show_backtest: true
+    show_signals: true
+    show_futures: true
+    theme: "dark"
+  
+  formats:
+    - json
+    - html
+
+# === Schedule ===
+schedule:
+  cron: "*/15 * * * *"
+  timezone: "UTC"

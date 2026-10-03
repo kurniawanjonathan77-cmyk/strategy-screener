@@ -1,0 +1,116 @@
+data:
+  binance:
+    enabled: false
+    base_url: "https://api.binance.com"
+    endpoints: ["https://api.binance.com", "https://api1.binance.com"]
+  coingecko:
+    enabled: true
+    base_url: "https://api.coingecko.com/api/v3"
+    rate_limit: 10
+    symbols: ["bitcoin", "ethereum", "solana"]
+    vs_currency: "usd"
+    days_history: 90
+  polymarket:
+    enabled: false
+    base_url: "https://clob.polymarket.dev"
+  discovery:
+    enabled: false
+  cache:
+    enabled: true
+    ttl_seconds: 300
+    path: "data/cache"
+
+strategies:
+  mean_reversion:
+    enabled: true
+    weight: 1.0
+    params:
+      rsi_period: 14
+      rsi_oversold: 30
+      rsi_overbought: 70
+      bb_period: 20
+      bb_std: 2.0
+      zscore_period: 20
+      zscore_threshold: 2.0
+    min_score: 0.5
+  momentum:
+    enabled: true
+    weight: 1.0
+    params:
+      ema_fast: 12
+      ema_slow: 26
+      macd_signal: 9
+      roc_period: 10
+      roc_threshold: 0.02
+    min_score: 0.45
+  breakout:
+    enabled: true
+    weight: 0.8
+    params:
+      donchian_period: 20
+      volume_multiplier: 1.5
+      atr_period: 14
+      atr_multiplier: 2.0
+    min_score: 0.5
+  volatility:
+    enabled: false
+  trend_following:
+    enabled: false
+  volume_breakout:
+    enabled: true
+    weight: 0.9
+    params:
+      volume_lookback: 20
+      volume_multiplier: 3.0
+      price_change_threshold: 0.03
+      vwap_period: 20
+      rsi_period: 14
+      rsi_max_entry: 70
+    min_score: 0.45
+  mean_reversion_scalp:
+    enabled: true
+    weight: 0.6
+    params:
+      bb_period: 20
+      bb_std: 2.5
+      rsi_period: 7
+      rsi_extreme_low: 20
+      rsi_extreme_high: 80
+      holding_periods: 12
+    min_score: 0.4
+
+backtest:
+  walk_forward:
+    train_window_days: 30
+    test_window_days: 7
+    step_days: 7
+    min_train_samples: 50
+  metrics:
+    min_trades: 5
+    max_drawdown: 0.50
+    min_sharpe: 0.0
+    min_win_rate: 0.30
+    min_profit_factor: 1.0
+    min_expectancy: 0.0
+
+screening:
+  top_n: 20
+  min_confidence: 0.4
+  min_risk_reward: 1.0
+  max_spread_pct: 5.0
+  default_stop_loss_pct: 0.05
+  default_take_profit_pct: 0.10
+  default_position_size_pct: 0.02
+
+output:
+  dashboard:
+    title: "Test Screener"
+    update_interval_min: 15
+    show_backtest: true
+    show_signals: true
+    theme: "dark"
+  formats: ["json", "html"]
+
+schedule:
+  cron: "*/15 * * * *"
+  timezone: "UTC"
