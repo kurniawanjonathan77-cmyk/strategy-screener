@@ -103,10 +103,10 @@ jobs:
       - name: Run Extended Backtest
         run: |
           python -c "
-from src.screener import StrategyScreener
-import asyncio
-screener = StrategyScreener()
-asyncio.run(screener.run_screening())
-"
+          from src.screener import StrategyScreener
+          import asyncio
+          screener = StrategyScreener()
+          asyncio.run(screener.run_screening())
+          "
         env:
           PYTHONPATH: ${{ github.workspace }}
