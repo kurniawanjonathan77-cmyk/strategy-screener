@@ -4,10 +4,7 @@ pandas>=2.1.0
 numpy>=1.26.0
 aiohttp>=3.9.0
 requests>=2.31.0
-
-# Technical Analysis
-ta-lib>=0.4.28  # Optional, will fallback to pandas-ta
-pandas-ta>=0.3.14b0
+loguru>=0.7.0
 
 # Utilities
 python-dateutil>=2.8.2
